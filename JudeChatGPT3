@@ -1,0 +1,65 @@
+import robocode.*;
+import robocode.util.Utils; // Importação da classe Utils
+import java.awt.Color;
+
+public class Jude extends AdvancedRobot {
+    
+    boolean inWall = false;
+
+    public void run() {
+        // Define cores do robô
+        setBodyColor(Color.blue);
+        setGunColor(Color.black);
+        setRadarColor(Color.red);
+        setBulletColor(Color.yellow);
+        setScanColor(Color.green);
+
+        // Gira o radar infinitamente
+        setTurnRadarRight(Double.POSITIVE_INFINITY);
+        
+        while (true) {
+            // Move o robô
+            move();
+            // Atira
+            fire(1);
+            // Verifica se o robô está perto de uma parede
+            checkWall();
+        }
+    }
+
+    public void onScannedRobot(ScannedRobotEvent e) {
+        // Quando um robô inimigo é detectado, mira e atira
+        double absoluteBearing = getHeadingRadians() + e.getBearingRadians();
+        setTurnGunRightRadians(Utils.normalRelativeAngle(absoluteBearing - getGunHeadingRadians()));
+        fire(3);
+    }
+
+    public void onHitWall(HitWallEvent e) {
+        // Quando o robô atinge uma parede, muda a direção
+        inWall = true;
+    }
+
+    public void onHitByBullet(HitByBulletEvent e) {
+        // Quando o robô é atingido por uma bala, move-se de forma aleatória
+        setAhead(100);
+        setTurnRight(90);
+    }
+
+    private void move() {
+        // Move o robô para frente
+        if (inWall) {
+            setBack(100);
+            setTurnRight(90);
+            inWall = false;
+        } else {
+            setAhead(100);
+        }
+    }
+
+    private void checkWall() {
+        // Verifica se o robô está perto de uma parede
+        if (getX() <= 50 || getX() >= getBattleFieldWidth() - 50 || getY() <= 50 || getY() >= getBattleFieldHeight() - 50) {
+            inWall = true;
+        }
+    }
+}
